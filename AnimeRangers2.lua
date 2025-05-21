@@ -31,44 +31,6 @@ if currentPlaceId ~= allowedPlaceId then
     return
 end
 
--- Tạo logo nhỏ ở góc
-local ScreenGui = Instance.new("ScreenGui")
-local ImageButton = Instance.new("ImageButton")
-local UICorner = Instance.new("UICorner")
-
-ScreenGui.Name = "OpenUI"
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.ResetOnSpawn = false
-
-ImageButton.Parent = ScreenGui
-ImageButton.BackgroundColor3 = Color3.fromRGB(105, 105, 105)
-ImageButton.BackgroundTransparency = 0.8
-ImageButton.Position = UDim2.new(0.9, 0, 0.1, 0)
-ImageButton.Size = UDim2.new(0, 50, 0, 50)
-ImageButton.Image = "rbxassetid://90319448802378"
-ImageButton.Draggable = true
-ImageButton.Transparency = 0.2
-
-UICorner.CornerRadius = UDim.new(0, 200)
-UICorner.Parent = ImageButton
-
--- Gắn vào CoreGui
-if syn and syn.protect_gui then
-    syn.protect_gui(ScreenGui)
-    ScreenGui.Parent = game:GetService("CoreGui")
-elseif gethui then
-    ScreenGui.Parent = gethui()
-else
-    ScreenGui.Parent = game:GetService("CoreGui")
-end
-
--- Khi bấm vào logo thì xóa logo và chạy MainScript
-ImageButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-    MainScript()
-end)
-
-
 -- Phiên bản thay thế cho Fluent:Notify
 local Fluent = {}
 Fluent.Notify = function(options)
@@ -465,15 +427,6 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
--- Ẩn UI ngay khi khởi động, chỉ hiện logo, bấm logo mới hiện UI
-spawn(function()
-    repeat wait(0.1) until game:IsLoaded() and Window
-    wait(0.5)
-    if Window and type(Window.Minimize) == "function" then
-        Window:Minimize()
-    end
-end)
-
 -- Tạo tab Info
 local InfoTab = Window:AddTab({
     Title = "Info",
@@ -526,7 +479,7 @@ local SettingsTab = Window:AddTab({
 
 -- Thêm hỗ trợ Logo khi minimize
 repeat task.wait(0.25) until game:IsLoaded()
-getgenv().Image = "rbxassetid://90319448802378" -- ID tài nguyên hình ảnh logo
+getgenv().Image = "rbxassetid://124432203914164" -- ID tài nguyên hình ảnh logo
 getgenv().ToggleUI = "LeftControl"              -- Phím để bật/tắt giao diện
 
 -- Tạo logo để mở lại UI khi đã minimize

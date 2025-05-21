@@ -31,6 +31,44 @@ if currentPlaceId ~= allowedPlaceId then
     return
 end
 
+-- Tạo logo nhỏ ở góc
+local ScreenGui = Instance.new("ScreenGui")
+local ImageButton = Instance.new("ImageButton")
+local UICorner = Instance.new("UICorner")
+
+ScreenGui.Name = "OpenUI"
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
+
+ImageButton.Parent = ScreenGui
+ImageButton.BackgroundColor3 = Color3.fromRGB(105, 105, 105)
+ImageButton.BackgroundTransparency = 0.8
+ImageButton.Position = UDim2.new(0.9, 0, 0.1, 0)
+ImageButton.Size = UDim2.new(0, 50, 0, 50)
+ImageButton.Image = "rbxassetid://90319448802378"
+ImageButton.Draggable = true
+ImageButton.Transparency = 0.2
+
+UICorner.CornerRadius = UDim.new(0, 200)
+UICorner.Parent = ImageButton
+
+-- Gắn vào CoreGui
+if syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = game:GetService("CoreGui")
+elseif gethui then
+    ScreenGui.Parent = gethui()
+else
+    ScreenGui.Parent = game:GetService("CoreGui")
+end
+
+-- Khi bấm vào logo thì xóa logo và chạy MainScript
+ImageButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+    MainScript()
+end)
+
+
 -- Phiên bản thay thế cho Fluent:Notify
 local Fluent = {}
 Fluent.Notify = function(options)
@@ -418,7 +456,7 @@ local playerName = game:GetService("Players").LocalPlayer.Name
 
 -- Tạo Window
 local Window = Fluent:CreateWindow({
-    Title = "HT Hub | Anime Rangers X",
+    Title = "Kaihon Hub | Anime Rangers X",
     SubTitle = "",
     TabWidth = 140,
     Size = UDim2.fromOffset(450, 350),
@@ -5317,4 +5355,3 @@ RCExchangeSection:AddToggle("BuyQuinqueToggle", {
         end
     end
 })
-

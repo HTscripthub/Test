@@ -145,7 +145,7 @@ MapSection:AddToggle("AutoJoinToggle", {
             
             -- Tạo coroutine để tự động tham gia map
             spawn(function()
-                while autoJoinEnabled and wait(60) do -- Lặp lại mỗi 60 giây
+                while autoJoinEnabled and wait(10) do -- Lặp lại mỗi 60 giây
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap, selectedAct)
                         print("Attempting to join map: " .. selectedMap .. " Act " .. selectedAct)
@@ -180,7 +180,7 @@ MapSection:AddToggle("AutoStartToggle", {
             
             -- Tạo coroutine để tự động bắt đầu match
             spawn(function()
-                while autoStartEnabled and wait(60) do -- Lặp lại mỗi 60 giây
+                while autoStartEnabled and wait(15) do -- Lặp lại mỗi 60 giây
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
                         print("Attempting to start match")

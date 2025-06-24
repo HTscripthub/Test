@@ -104,7 +104,7 @@ MapSection:AddDropdown("MapDropdown", {
     Title = "Select Map",
     Values = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City"},
     Multi = false,
-    Default = 1,
+    Default = ConfigSystem.CurrentConfig.SelectedMap or "Marines Fort",
     Callback = function(Value)
         selectedMap = Value
         ConfigSystem.CurrentConfig.SelectedMap = Value
@@ -118,10 +118,10 @@ MapSection:AddDropdown("ActDropdown", {
     Title = "Select Act",
     Values = {"1", "2", "3", "4", "5", "6"},
     Multi = false,
-    Default = 1,
+    Default = ConfigSystem.CurrentConfig.SelectedAct or 1,
     Callback = function(Value)
-        selectedAct = tonumber(Value)
-        ConfigSystem.CurrentConfig.SelectedAct = selectedAct
+        selectedAct = Value
+        ConfigSystem.CurrentConfig.SelectedAct = Value
         ConfigSystem.SaveConfig()
         print("Selected Act: " .. selectedAct)
     end
@@ -145,7 +145,7 @@ MapSection:AddToggle("AutoJoinToggle", {
             
             -- Tạo coroutine để tự động tham gia map
             spawn(function()
-                while autoJoinEnabled and wait(60) do -- Lặp lại mỗi 60 giây
+                while autoJoinEnabled and wait(10) do -- Lặp lại mỗi 10 giây
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap, selectedAct)
                         print("Attempting to join map: " .. selectedMap .. " Act " .. selectedAct)
@@ -180,7 +180,7 @@ MapSection:AddToggle("AutoStartToggle", {
             
             -- Tạo coroutine để tự động bắt đầu match
             spawn(function()
-                while autoStartEnabled and wait(60) do -- Lặp lại mỗi 60 giây
+                while autoStartEnabled and wait(15) do -- Lặp lại mỗi 15 giây
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
                         print("Attempting to start match")

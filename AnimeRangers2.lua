@@ -123,7 +123,7 @@ MapSection:AddDropdown("MapDropdown", {
     Title = "Select Map",
     Values = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City"},
     Multi = false,
-    Default = selectedMap,
+    Default = ConfigSystem.CurrentConfig.SelectedMap or "Marines Fort",
     Callback = function(Value)
         selectedMap = Value
         ConfigSystem.CurrentConfig.SelectedMap = Value
@@ -137,7 +137,7 @@ MapSection:AddDropdown("ActDropdown", {
     Title = "Select Act",
     Values = {"1", "2", "3", "4", "5", "6"},
     Multi = false,
-    Default = tostring(selectedAct),
+    Default = ConfigSystem.CurrentConfig.SelectedAct or 1,
     Callback = function(Value)
         selectedAct = tonumber(Value)
         ConfigSystem.CurrentConfig.SelectedAct = selectedAct

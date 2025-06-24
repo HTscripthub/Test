@@ -38,7 +38,7 @@ ConfigSystem.SaveConfig = function()
         writefile(ConfigSystem.FileName, game:GetService("HttpService"):JSONEncode(ConfigSystem.CurrentConfig))
     end)
     if success then
-        print("Đã lưu cấu hình thành công!")
+        logPrint("Đã lưu cấu hình thành công!")
     else
         warn("Lưu cấu hình thất bại:", err)
     end

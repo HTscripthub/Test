@@ -129,7 +129,7 @@ local TeleportButton = MainTab:AddButton({
 -- Toggle Auto Start
 local AutoStartToggle = MainTab:AddToggle("AutoStartToggle", {
     Title = "Auto Start",
-    Description = "Tự động bắt đầu game",
+    Description = "Tự động teleport và bắt đầu game",
     Default = ConfigSystem.CurrentConfig.AutoStartEnabled or false
 })
 
@@ -142,6 +142,21 @@ AutoStartToggle:OnChanged(function(Value)
         -- Bắt đầu auto start loop
         getgenv().AutoStartEnabled = true
         spawn(function()
+            -- Đầu tiên teleport đến map và act đã chọn
+            local selectedMap = ConfigSystem.CurrentConfig.SelectedMap
+            local selectedAct = ConfigSystem.CurrentConfig.SelectedAct
+            
+            if selectedMap and selectedAct then
+                pcall(function()
+                    game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap .. "(Map)", selectedAct)
+                    print("Auto Start: Đã teleport đến:", selectedMap, "- Act:", selectedAct)
+                end)
+            end
+            
+            -- Đợi một chút để teleport hoàn tất
+            wait(2)
+            
+            -- Sau đó bắt đầu auto skip
             while getgenv().AutoStartEnabled do
                 wait(1) -- Kiểm tra mỗi giây
                 if ConfigSystem.CurrentConfig.AutoStartEnabled then
@@ -246,6 +261,21 @@ end)
 if ConfigSystem.CurrentConfig.AutoStartEnabled then
     getgenv().AutoStartEnabled = true
     spawn(function()
+        -- Đầu tiên teleport đến map và act đã chọn
+        local selectedMap = ConfigSystem.CurrentConfig.SelectedMap
+        local selectedAct = ConfigSystem.CurrentConfig.SelectedAct
+        
+        if selectedMap and selectedAct then
+            pcall(function()
+                game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap .. "(Map)", selectedAct)
+                print("Auto Start khởi tạo: Đã teleport đến:", selectedMap, "- Act:", selectedAct)
+            end)
+        end
+        
+        -- Đợi một chút để teleport hoàn tất
+        wait(2)
+        
+        -- Sau đó bắt đầu auto skip
         while getgenv().AutoStartEnabled do
             wait(1)
             if ConfigSystem.CurrentConfig.AutoStartEnabled then

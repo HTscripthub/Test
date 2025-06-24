@@ -147,7 +147,7 @@ MapSection:AddToggle("AutoJoinToggle", {
             spawn(function()
                 while autoJoinEnabled and wait(60) do -- Lặp lại mỗi 60 giây
                     pcall(function()
-                        game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap .. "(Map)", selectedAct)
+                        game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap, selectedAct)
                         print("Attempting to join map: " .. selectedMap .. " Act " .. selectedAct)
                     end)
                 end
@@ -202,7 +202,7 @@ MapSection:AddButton({
     Title = "Join Map Now",
     Callback = function()
         pcall(function()
-            game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap .. "(Map)", selectedAct)
+            game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap, selectedAct)
             
             Fluent:Notify({
                 Title = "Joining Map",

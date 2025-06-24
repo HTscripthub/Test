@@ -1,3 +1,7 @@
+if game.PlaceId ~= 18583778121 then
+    warn("Không đúng PlaceId! Script sẽ dừng.")
+    return
+end
 
 -- Đợi 15 giây trước khi khởi động script
 print("Anime Last Stand Script đang khởi động...")

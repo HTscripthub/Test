@@ -28,7 +28,9 @@ ConfigSystem.DefaultConfig = {
     SelectedMap = "Marines Fort",
     SelectedAct = 1,
     AutoJoinEnabled = false,
-    AutoStartEnabled = false
+    AutoStartEnabled = false,
+    -- Console Settings
+    ConsoleLogEnabled = true
 }
 ConfigSystem.CurrentConfig = {}
 
@@ -38,7 +40,7 @@ ConfigSystem.SaveConfig = function()
         writefile(ConfigSystem.FileName, game:GetService("HttpService"):JSONEncode(ConfigSystem.CurrentConfig))
     end)
     if success then
-        print("Đã lưu cấu hình thành công!")
+        safeLog("Đã lưu cấu hình thành công!")
     else
         warn("Lưu cấu hình thất bại:", err)
     end
@@ -72,6 +74,14 @@ local selectedMap = ConfigSystem.CurrentConfig.SelectedMap or "Marines Fort"
 local selectedAct = ConfigSystem.CurrentConfig.SelectedAct or 1
 local autoJoinEnabled = ConfigSystem.CurrentConfig.AutoJoinEnabled or false
 local autoStartEnabled = ConfigSystem.CurrentConfig.AutoStartEnabled or false
+local consoleLogEnabled = ConfigSystem.CurrentConfig.ConsoleLogEnabled ~= false -- Mặc định true
+
+-- Hàm log có điều kiện
+local function safeLog(message)
+    if consoleLogEnabled then
+        print(message)
+    end
+end
 
 -- Biến để kiểm soát coroutines
 local autoJoinCoroutine = nil
@@ -129,7 +139,7 @@ MapSection:AddDropdown("MapDropdown", {
         selectedMap = Value
         ConfigSystem.CurrentConfig.SelectedMap = Value
         ConfigSystem.SaveConfig()
-        print("Selected Map: " .. selectedMap)
+        safeLog("Selected Map: " .. selectedMap)
     end
 })
 
@@ -143,7 +153,7 @@ MapSection:AddDropdown("ActDropdown", {
         selectedAct = tonumber(Value)
         ConfigSystem.CurrentConfig.SelectedAct = selectedAct
         ConfigSystem.SaveConfig()
-        print("Selected Act: " .. selectedAct)
+        safeLog("Selected Act: " .. selectedAct)
     end
 })
 
@@ -168,7 +178,7 @@ MapSection:AddToggle("AutoJoinToggle", {
                 while autoJoinEnabled do
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap, selectedAct)
-                        print("Attempting to join: " .. selectedMap .. " Act " .. selectedAct)
+                        safeLog("Attempting to join: " .. selectedMap .. " Act " .. selectedAct)
                     end)
                     
                     -- Chờ 60 giây trước khi thử lại
@@ -216,7 +226,7 @@ MapSection:AddToggle("AutoStartToggle", {
                 while autoStartEnabled do
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
-                        print("Attempting to start match")
+                        safeLog("Attempting to start match")
                     end)
                     
                     -- Chờ 60 giây trước khi thử lại
@@ -246,6 +256,24 @@ MapSection:AddToggle("AutoStartToggle", {
 -- Settings tab
 local SettingsSection = SettingsTab:AddSection("Script Settings")
 
+-- Toggle Console Log
+SettingsSection:AddToggle("ConsoleLogToggle", {
+    Title = "Console Log",
+    Description = "Bật/tắt log console để giảm lag",
+    Default = consoleLogEnabled,
+    Callback = function(Value)
+        consoleLogEnabled = Value
+        ConfigSystem.CurrentConfig.ConsoleLogEnabled = Value
+        ConfigSystem.SaveConfig()
+        
+        if consoleLogEnabled then
+            print("Console log đã được bật")
+        else
+            print("Console log đã được tắt - giảm lag")
+        end
+    end
+})
+
 -- Integration with SaveManager
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
@@ -271,16 +299,19 @@ SettingsSection:AddButton({
     Title = "Debug Config",
     Description = "Hiển thị cấu hình hiện tại",
     Callback = function()
-        print("=== CONFIG DEBUG ===")
-        print("Selected Map:", ConfigSystem.CurrentConfig.SelectedMap)
-        print("Selected Act:", ConfigSystem.CurrentConfig.SelectedAct)
-        print("Auto Join:", ConfigSystem.CurrentConfig.AutoJoinEnabled)
-        print("Auto Start:", ConfigSystem.CurrentConfig.AutoStartEnabled)
-        print("File exists:", isfile(ConfigSystem.FileName))
+        if consoleLogEnabled then
+            print("=== CONFIG DEBUG ===")
+            print("Selected Map:", ConfigSystem.CurrentConfig.SelectedMap)
+            print("Selected Act:", ConfigSystem.CurrentConfig.SelectedAct)
+            print("Auto Join:", ConfigSystem.CurrentConfig.AutoJoinEnabled)
+            print("Auto Start:", ConfigSystem.CurrentConfig.AutoStartEnabled)
+            print("Console Log:", ConfigSystem.CurrentConfig.ConsoleLogEnabled)
+            print("File exists:", isfile(ConfigSystem.FileName))
+        end
         
         Fluent:Notify({
             Title = "Debug Config",
-            Content = "Map: " .. tostring(ConfigSystem.CurrentConfig.SelectedMap) .. " | Act: " .. tostring(ConfigSystem.CurrentConfig.SelectedAct),
+            Content = "Map: " .. tostring(ConfigSystem.CurrentConfig.SelectedMap) .. " | Act: " .. tostring(ConfigSystem.CurrentConfig.SelectedAct) .. " | Log: " .. tostring(consoleLogEnabled),
             Duration = 5
         })
     end
@@ -359,9 +390,12 @@ Fluent:Notify({
     Duration = 5
 })
 
--- Debug: In ra config đã load
-print("=== LOADED CONFIG ===")
-print("Map:", selectedMap)
-print("Act:", selectedAct)
-print("Auto Join:", autoJoinEnabled)
-print("Auto Start:", autoStartEnabled)
+-- Debug: In ra config đã load (chỉ khi console log bật)
+if consoleLogEnabled then
+    print("=== LOADED CONFIG ===")
+    print("Map:", selectedMap)
+    print("Act:", selectedAct)
+    print("Auto Join:", autoJoinEnabled)
+    print("Auto Start:", autoStartEnabled)
+    print("Console Log:", consoleLogEnabled)
+end

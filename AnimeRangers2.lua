@@ -93,8 +93,8 @@ local autoStartCoroutine = nil
 local Window = Fluent:CreateWindow({
     Title = "Anime Last Stand Script",
     SubTitle = "by Duong Tuan",
-    TabWidth = 160,
-    Size = UDim2.fromOffset(580, 460),
+    TabWidth = 140,
+    Size = UDim2.fromOffset(450, 350),
     Acrylic = true,
     Theme = "Dark",
     MinimizeKey = Enum.KeyCode.LeftControl
@@ -222,6 +222,7 @@ MapSection:AddToggle("AutoStartToggle", {
                 Content = "Will automatically start matches when ready",
                 Duration = 3
             })
+            wait(3) -- Đợi một chút để thông báo hiển thị
             
             -- Tạo coroutine để tự động start
             autoStartCoroutine = coroutine.create(function()

@@ -1,9 +1,9 @@
 
 -- Đợi 15 giây trước khi khởi động script
 print("Anime Last Stand Script đang khởi động...")
-print("Đợi 15 giây để tránh lag...")
+print("Đợi 20 giây để tránh lag...")
 
-for i = 15, 1, -1 do
+for i = 20, 1, -1 do
     print("Khởi động sau " .. i .. " giây...")
     wait(1)
 end

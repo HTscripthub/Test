@@ -22,10 +22,12 @@ end
 
 -- Hệ thống lưu trữ cấu hình
 local ConfigSystem = {}
-ConfigSystem.FileName = "KaihonAVConfig_" .. game:GetService("Players").LocalPlayer.Name .. ".json"
+ConfigSystem.FileName = "KaihonALSConfig_" .. game:GetService("Players").LocalPlayer.Name .. ".json"
 ConfigSystem.DefaultConfig = {
+    -- Map Settings
     SelectedMap = "Marines Fort",
     SelectedAct = 1,
+    AutoJoinEnabled = false,
     AutoStartEnabled = false
 }
 ConfigSystem.CurrentConfig = {}
@@ -65,10 +67,16 @@ end
 -- Tải cấu hình khi khởi động
 ConfigSystem.LoadConfig()
 
--- Cấu hình UI
+-- Biến lưu trạng thái Map
+local selectedMap = ConfigSystem.CurrentConfig.SelectedMap or "Marines Fort"
+local selectedAct = ConfigSystem.CurrentConfig.SelectedAct or 1
+local autoJoinEnabled = ConfigSystem.CurrentConfig.AutoJoinEnabled or false
+local autoStartEnabled = ConfigSystem.CurrentConfig.AutoStartEnabled or false
+
+-- Tạo Window chính
 local Window = Fluent:CreateWindow({
-    Title = "Kaihon Hub | Anime Last Stand",
-    SubTitle = "",
+    Title = "Anime Last Stand Script",
+    SubTitle = "by Cody",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -76,10 +84,153 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
--- Tạo tab Main duy nhất
-local MainTab = Window:AddTab({ Title = "Map", Icon = "rbxassetid://13311802307" })
--- Thêm dòng này để tạo SettingsTab
-local SettingsTab = Window:AddTab({ Title = "Settings", Icon = "rbxassetid://13311798537" })
+-- Tạo Tab Main
+local MainTab = Window:AddTab({
+    Title = "Main",
+    Icon = "home"
+})
+
+-- Tạo tab Settings
+local SettingsTab = Window:AddTab({
+    Title = "Settings",
+    Icon = "settings"
+})
+
+-- Section Map trong tab Main
+local MapSection = MainTab:AddSection("Map Settings")
+
+-- Dropdown để chọn Map
+MapSection:AddDropdown("MapDropdown", {
+    Title = "Select Map",
+    Values = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City"},
+    Multi = false,
+    Default = 1,
+    Callback = function(Value)
+        selectedMap = Value
+        ConfigSystem.CurrentConfig.SelectedMap = Value
+        ConfigSystem.SaveConfig()
+        print("Selected Map: " .. selectedMap)
+    end
+})
+
+-- Dropdown để chọn Act
+MapSection:AddDropdown("ActDropdown", {
+    Title = "Select Act",
+    Values = {"1", "2", "3", "4", "5", "6"},
+    Multi = false,
+    Default = 1,
+    Callback = function(Value)
+        selectedAct = tonumber(Value)
+        ConfigSystem.CurrentConfig.SelectedAct = selectedAct
+        ConfigSystem.SaveConfig()
+        print("Selected Act: " .. selectedAct)
+    end
+})
+
+-- Toggle để bật/tắt Auto Join Map
+MapSection:AddToggle("AutoJoinToggle", {
+    Title = "Auto Join Map",
+    Default = ConfigSystem.CurrentConfig.AutoJoinEnabled or false,
+    Callback = function(Value)
+        autoJoinEnabled = Value
+        ConfigSystem.CurrentConfig.AutoJoinEnabled = Value
+        ConfigSystem.SaveConfig()
+        
+        if autoJoinEnabled then
+            Fluent:Notify({
+                Title = "Auto Join Enabled",
+                Content = "Auto joining " .. selectedMap .. " (Act " .. selectedAct .. ")",
+                Duration = 3
+            })
+            
+            -- Tạo coroutine để tự động tham gia map
+            spawn(function()
+                while autoJoinEnabled and wait(60) do -- Lặp lại mỗi 60 giây
+                    pcall(function()
+                        game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap .. "(Map)", selectedAct)
+                        print("Attempting to join map: " .. selectedMap .. " Act " .. selectedAct)
+                    end)
+                end
+            end)
+        else
+            Fluent:Notify({
+                Title = "Auto Join Disabled",
+                Content = "Stopped auto joining maps",
+                Duration = 3
+            })
+        end
+    end
+})
+
+-- Toggle để bật/tắt Auto Start
+MapSection:AddToggle("AutoStartToggle", {
+    Title = "Auto Start",
+    Default = ConfigSystem.CurrentConfig.AutoStartEnabled or false,
+    Callback = function(Value)
+        autoStartEnabled = Value
+        ConfigSystem.CurrentConfig.AutoStartEnabled = Value
+        ConfigSystem.SaveConfig()
+        
+        if autoStartEnabled then
+            Fluent:Notify({
+                Title = "Auto Start Enabled",
+                Content = "Will automatically start matches when ready",
+                Duration = 3
+            })
+            
+            -- Tạo coroutine để tự động bắt đầu match
+            spawn(function()
+                while autoStartEnabled and wait(60) do -- Lặp lại mỗi 60 giây
+                    pcall(function()
+                        game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
+                        print("Attempting to start match")
+                    end)
+                end
+            end)
+        else
+            Fluent:Notify({
+                Title = "Auto Start Disabled",
+                Content = "Stopped auto starting matches",
+                Duration = 3
+            })
+        end
+    end
+})
+
+-- Manual Join Button
+MapSection:AddButton({
+    Title = "Join Map Now",
+    Callback = function()
+        pcall(function()
+            game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap .. "(Map)", selectedAct)
+            
+            Fluent:Notify({
+                Title = "Joining Map",
+                Content = "Attempting to join " .. selectedMap .. " (Act " .. selectedAct .. ")",
+                Duration = 3
+            })
+        end)
+    end
+})
+
+-- Manual Start Button
+MapSection:AddButton({
+    Title = "Start Match Now",
+    Callback = function()
+        pcall(function()
+            game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
+            
+            Fluent:Notify({
+                Title = "Starting Match",
+                Content = "Attempting to start match",
+                Duration = 3
+            })
+        end)
+    end
+})
+
+-- Settings tab
+local SettingsSection = SettingsTab:AddSection("Script Settings")
 
 -- Integration with SaveManager
 SaveManager:SetLibrary(Fluent)
@@ -87,8 +238,8 @@ InterfaceManager:SetLibrary(Fluent)
 
 -- Thay đổi cách lưu cấu hình để sử dụng tên người chơi
 local playerName = game:GetService("Players").LocalPlayer.Name
-InterfaceManager:SetFolder("KaihonHubAV")
-SaveManager:SetFolder("KaihonHubAV/" .. playerName)
+InterfaceManager:SetFolder("KaihonHubALS")
+SaveManager:SetFolder("KaihonHubALS/" .. playerName)
 
 -- Thêm thông tin vào tab Settings
 SettingsTab:AddParagraph({
@@ -117,7 +268,7 @@ AutoSaveConfig()
 
 -- Thêm event listener để lưu ngay khi thay đổi giá trị
 local function setupSaveEvents()
-    for _, tab in pairs({MainTab, SummonTab, MapsTab, SettingsTab}) do
+    for _, tab in pairs({MainTab, SettingsTab}) do
         if tab and tab._components then
             for _, element in pairs(tab._components) do
                 if element and element.OnChanged then
@@ -188,81 +339,7 @@ end)
 
 -- Thông báo khi script đã tải xong
 Fluent:Notify({
-    Title = "Kaihon Hub đã sẵn sàng",
+    Title = "Anime Last Stand đã sẵn sàng",
     Content = "Script đã tải thành công! Đã tải cấu hình cho " .. playerName,
     Duration = 3
-})
-
--- === Thêm Dropdown và Toggle cho Auto Start Map ===
-local mapList = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City"}
-local actList = {1, 2, 3, 4, 5, 6}
-
--- Giá trị mặc định
-ConfigSystem.DefaultConfig.SelectedMap = mapList[1]
-ConfigSystem.DefaultConfig.SelectedAct = actList[1]
-ConfigSystem.DefaultConfig.AutoStartEnabled = false
-
-ConfigSystem.CurrentConfig.SelectedMap = ConfigSystem.CurrentConfig.SelectedMap or ConfigSystem.DefaultConfig.SelectedMap
-ConfigSystem.CurrentConfig.SelectedAct = ConfigSystem.CurrentConfig.SelectedAct or ConfigSystem.DefaultConfig.SelectedAct
-ConfigSystem.CurrentConfig.AutoStartEnabled = ConfigSystem.CurrentConfig.AutoStartEnabled or ConfigSystem.DefaultConfig.AutoStartEnabled
-
--- Dropdown chọn map
-local mapDropdown = MainTab:AddDropdown("SelectMapDropdown", {
-    Title = "Select Map",
-    Values = mapList,
-    Multi = false,
-    Default = ConfigSystem.CurrentConfig.SelectedMap,
-    Callback = function(value)
-        ConfigSystem.CurrentConfig.SelectedMap = value
-        ConfigSystem.SaveConfig()
-    end
-})
-
--- Dropdown chọn act
-local actDropdown = MainTab:AddDropdown("SelectActDropdown", {
-    Title = "Select Act",
-    Values = actList,
-    Multi = false,
-    Default = ConfigSystem.CurrentConfig.SelectedAct,
-    Callback = function(value)
-        ConfigSystem.CurrentConfig.SelectedAct = value
-        ConfigSystem.SaveConfig()
-    end
-})
-
--- Toggle Auto Start
-local autoStartToggle
-local autoStartThread
-local function doAutoStart()
-    while ConfigSystem.CurrentConfig.AutoStartEnabled do
-        local map = ConfigSystem.CurrentConfig.SelectedMap or mapList[1]
-        local act = ConfigSystem.CurrentConfig.SelectedAct or actList[1]
-        -- Gửi lệnh chọn map và act
-        local mapArg = map
-        if map == "Central City" then
-            mapArg = "Central City(Map)" -- Đúng format yêu cầu
-        end
-        pcall(function()
-            game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", mapArg, act)
-            wait(1)
-            game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
-        end)
-        -- Lặp lại sau 5 giây
-        wait(5)
-    end
-end
-
-autoStartToggle = MainTab:AddToggle("AutoStartToggle", {
-    Title = "Auto Start",
-    Default = ConfigSystem.CurrentConfig.AutoStartEnabled,
-    Callback = function(state)
-        ConfigSystem.CurrentConfig.AutoStartEnabled = state
-        ConfigSystem.SaveConfig()
-        if state then
-            if autoStartThread == nil or coroutine.status(autoStartThread) == "dead" then
-                autoStartThread = coroutine.create(doAutoStart)
-                coroutine.resume(autoStartThread)
-            end
-        end
-    end
 })

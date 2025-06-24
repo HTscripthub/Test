@@ -1,6 +1,13 @@
-print("Kaihon Hub | Anime Rangers X đang khởi động, vui lòng đợi 15 giây...")
-wait(15)
-print("Đang tải script...")
+-- Đợi 15 giây trước khi khởi động script
+print("Anime Last Stand Script đang khởi động...")
+print("Đợi 15 giây để tránh lag...")
+
+for i = 15, 1, -1 do
+    print("Khởi động sau " .. i .. " giây...")
+    wait(1)
+end
+
+print("Bắt đầu tải script...")
 
 local success, err = pcall(function()
     Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
@@ -95,8 +102,8 @@ local autoStartCoroutine = nil
 local Window = Fluent:CreateWindow({
     Title = "Anime Last Stand Script",
     SubTitle = "by Duong Tuan",
-    TabWidth = 140,
-    Size = UDim2.fromOffset(450, 350),
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
     Theme = "Dark",
     MinimizeKey = Enum.KeyCode.LeftControl

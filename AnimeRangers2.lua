@@ -73,10 +73,14 @@ local selectedAct = ConfigSystem.CurrentConfig.SelectedAct or 1
 local autoJoinEnabled = ConfigSystem.CurrentConfig.AutoJoinEnabled or false
 local autoStartEnabled = ConfigSystem.CurrentConfig.AutoStartEnabled or false
 
+-- Biến để kiểm soát coroutines
+local autoJoinCoroutine = nil
+local autoStartCoroutine = nil
+
 -- Tạo Window chính
 local Window = Fluent:CreateWindow({
     Title = "Anime Last Stand Script",
-    SubTitle = "by Cody",
+    SubTitle = "by Duong Tuan",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -104,7 +108,7 @@ MapSection:AddDropdown("MapDropdown", {
     Title = "Select Map",
     Values = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City"},
     Multi = false,
-    Default = ConfigSystem.CurrentConfig.SelectedMap or "Marines Fort",
+    Default = 1,
     Callback = function(Value)
         selectedMap = Value
         ConfigSystem.CurrentConfig.SelectedMap = Value
@@ -118,16 +122,16 @@ MapSection:AddDropdown("ActDropdown", {
     Title = "Select Act",
     Values = {"1", "2", "3", "4", "5", "6"},
     Multi = false,
-    Default = ConfigSystem.CurrentConfig.SelectedAct or 1,
+    Default = 1,
     Callback = function(Value)
-        selectedAct = Value
-        ConfigSystem.CurrentConfig.SelectedAct = Value
+        selectedAct = tonumber(Value)
+        ConfigSystem.CurrentConfig.SelectedAct = selectedAct
         ConfigSystem.SaveConfig()
         print("Selected Act: " .. selectedAct)
     end
 })
 
--- Toggle để bật/tắt Auto Join Map
+-- Toggle Auto Join Map
 MapSection:AddToggle("AutoJoinToggle", {
     Title = "Auto Join Map",
     Default = ConfigSystem.CurrentConfig.AutoJoinEnabled or false,
@@ -139,30 +143,43 @@ MapSection:AddToggle("AutoJoinToggle", {
         if autoJoinEnabled then
             Fluent:Notify({
                 Title = "Auto Join Enabled",
-                Content = "Auto joining " .. selectedMap .. " (Act " .. selectedAct .. ")",
+                Content = "Auto joining " .. selectedMap .. " Act " .. selectedAct,
                 Duration = 3
             })
             
-            -- Tạo coroutine để tự động tham gia map
-            spawn(function()
-                while autoJoinEnabled and wait(10) do -- Lặp lại mỗi 10 giây
+            -- Tạo coroutine để tự động join map
+            autoJoinCoroutine = coroutine.create(function()
+                while autoJoinEnabled do
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap, selectedAct)
-                        print("Attempting to join map: " .. selectedMap .. " Act " .. selectedAct)
+                        print("Attempting to join: " .. selectedMap .. " Act " .. selectedAct)
                     end)
+                    
+                    -- Chờ 60 giây trước khi thử lại
+                    for i = 1, 60 do
+                        if not autoJoinEnabled then break end
+                        wait(1)
+                    end
                 end
             end)
+            
+            coroutine.resume(autoJoinCoroutine)
         else
             Fluent:Notify({
                 Title = "Auto Join Disabled",
                 Content = "Stopped auto joining maps",
                 Duration = 3
             })
+            
+            -- Dừng coroutine
+            if autoJoinCoroutine then
+                autoJoinCoroutine = nil
+            end
         end
     end
 })
 
--- Toggle để bật/tắt Auto Start
+-- Toggle Auto Start
 MapSection:AddToggle("AutoStartToggle", {
     Title = "Auto Start",
     Default = ConfigSystem.CurrentConfig.AutoStartEnabled or false,
@@ -178,54 +195,35 @@ MapSection:AddToggle("AutoStartToggle", {
                 Duration = 3
             })
             
-            -- Tạo coroutine để tự động bắt đầu match
-            spawn(function()
-                while autoStartEnabled and wait(15) do -- Lặp lại mỗi 15 giây
+            -- Tạo coroutine để tự động start
+            autoStartCoroutine = coroutine.create(function()
+                while autoStartEnabled do
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
                         print("Attempting to start match")
                     end)
+                    
+                    -- Chờ 60 giây trước khi thử lại
+                    for i = 1, 60 do
+                        if not autoStartEnabled then break end
+                        wait(1)
+                    end
                 end
             end)
+            
+            coroutine.resume(autoStartCoroutine)
         else
             Fluent:Notify({
                 Title = "Auto Start Disabled",
                 Content = "Stopped auto starting matches",
                 Duration = 3
             })
+            
+            -- Dừng coroutine
+            if autoStartCoroutine then
+                autoStartCoroutine = nil
+            end
         end
-    end
-})
-
--- Manual Join Button
-MapSection:AddButton({
-    Title = "Join Map Now",
-    Callback = function()
-        pcall(function()
-            game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap, selectedAct)
-            
-            Fluent:Notify({
-                Title = "Joining Map",
-                Content = "Attempting to join " .. selectedMap .. " (Act " .. selectedAct .. ")",
-                Duration = 3
-            })
-        end)
-    end
-})
-
--- Manual Start Button
-MapSection:AddButton({
-    Title = "Start Match Now",
-    Callback = function()
-        pcall(function()
-            game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
-            
-            Fluent:Notify({
-                Title = "Starting Match",
-                Content = "Attempting to start match",
-                Duration = 3
-            })
-        end)
     end
 })
 

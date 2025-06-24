@@ -78,6 +78,8 @@ local Window = Fluent:CreateWindow({
 
 -- Tạo tab Main duy nhất
 local MainTab = Window:AddTab({ Title = "Map", Icon = "rbxassetid://13311802307" })
+-- Thêm dòng này để tạo SettingsTab
+local SettingsTab = Window:AddTab({ Title = "Settings", Icon = "rbxassetid://13311798537" })
 
 -- Integration with SaveManager
 SaveManager:SetLibrary(Fluent)

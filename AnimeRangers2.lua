@@ -24,7 +24,7 @@ end
 local ConfigSystem = {}
 ConfigSystem.FileName = "KaihonAVConfig_" .. game:GetService("Players").LocalPlayer.Name .. ".json"
 ConfigSystem.DefaultConfig = {
-    SelectedMap = "Central City",
+    SelectedMap = "Marines Fort",
     SelectedAct = 1,
     AutoStartEnabled = false
 }
@@ -76,101 +76,8 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
--- Tạo tab Main
+-- Tạo tab Main duy nhất
 local MainTab = Window:AddTab({ Title = "Map", Icon = "rbxassetid://13311802307" })
-
--- Tạo tab Settings
-local SettingsTab = Window:AddTab({ Title = "Settings", Icon = "settings" })
-
--- Thêm các thành phần vào tab Main
-local MapDropdown = MainTab:AddDropdown("MapDropdown", {
-    Title = "Select Map",
-    Values = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City"},
-    Multi = false,
-    Default = ConfigSystem.CurrentConfig.SelectedMap or "Central City",
-})
-
-MapDropdown:OnChanged(function(Value)
-    ConfigSystem.CurrentConfig.SelectedMap = Value
-    ConfigSystem.SaveConfig()
-    print("Map đã chọn:", Value)
-end)
-
-local ActDropdown = MainTab:AddDropdown("ActDropdown", {
-    Title = "Select Act",
-    Values = {1, 2, 3, 4, 5, 6},
-    Multi = false,
-    Default = ConfigSystem.CurrentConfig.SelectedAct or 1,
-})
-
-ActDropdown:OnChanged(function(Value)
-    ConfigSystem.CurrentConfig.SelectedAct = Value
-    ConfigSystem.SaveConfig()
-    print("Act đã chọn:", Value)
-end)
-
--- Nút Teleport để di chuyển đến map và act đã chọn
-local TeleportButton = MainTab:AddButton({
-    Title = "Teleport to Selected Map",
-    Description = "Di chuyển đến map và act đã chọn",
-    Callback = function()
-        local selectedMap = ConfigSystem.CurrentConfig.SelectedMap
-        local selectedAct = ConfigSystem.CurrentConfig.SelectedAct
-        
-        if selectedMap and selectedAct then
-            pcall(function()
-                game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap .. "(Map)", selectedAct)
-                print("Đã teleport đến:", selectedMap, "- Act:", selectedAct)
-            end)
-        end
-    end
-})
-
--- Toggle Auto Start
-local AutoStartToggle = MainTab:AddToggle("AutoStartToggle", {
-    Title = "Auto Start",
-    Description = "Tự động teleport và bắt đầu game",
-    Default = ConfigSystem.CurrentConfig.AutoStartEnabled or false
-})
-
-AutoStartToggle:OnChanged(function(Value)
-    ConfigSystem.CurrentConfig.AutoStartEnabled = Value
-    ConfigSystem.SaveConfig()
-    
-    if Value then
-        print("Auto Start đã bật")
-        -- Bắt đầu auto start loop
-        getgenv().AutoStartEnabled = true
-        spawn(function()
-            -- Đầu tiên teleport đến map và act đã chọn
-            local selectedMap = ConfigSystem.CurrentConfig.SelectedMap
-            local selectedAct = ConfigSystem.CurrentConfig.SelectedAct
-            
-            if selectedMap and selectedAct then
-                pcall(function()
-                    game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap .. "(Map)", selectedAct)
-                    print("Auto Start: Đã teleport đến:", selectedMap, "- Act:", selectedAct)
-                end)
-            end
-            
-            -- Đợi một chút để teleport hoàn tất
-            wait(2)
-            
-            -- Sau đó bắt đầu auto skip
-            while getgenv().AutoStartEnabled do
-                wait(1) -- Kiểm tra mỗi giây
-                if ConfigSystem.CurrentConfig.AutoStartEnabled then
-                    pcall(function()
-                        game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
-                    end)
-                end
-            end
-        end)
-    else
-        print("Auto Start đã tắt")
-        getgenv().AutoStartEnabled = false
-    end
-end)
 
 -- Integration with SaveManager
 SaveManager:SetLibrary(Fluent)
@@ -205,6 +112,26 @@ end
 
 -- Thực thi tự động lưu cấu hình
 AutoSaveConfig()
+
+-- Thêm event listener để lưu ngay khi thay đổi giá trị
+local function setupSaveEvents()
+    for _, tab in pairs({MainTab, SummonTab, MapsTab, SettingsTab}) do
+        if tab and tab._components then
+            for _, element in pairs(tab._components) do
+                if element and element.OnChanged then
+                    element.OnChanged:Connect(function()
+                        pcall(function()
+                            ConfigSystem.SaveConfig()
+                        end)
+                    end)
+                end
+            end
+        end
+    end
+end
+
+-- Thiết lập events
+setupSaveEvents()
 
 -- Thêm hỗ trợ Logo khi minimize
 repeat task.wait(0.25) until game:IsLoaded()
@@ -257,39 +184,83 @@ task.spawn(function()
     end
 end)
 
--- Khởi tạo Auto Start nếu đã được bật trước đó
-if ConfigSystem.CurrentConfig.AutoStartEnabled then
-    getgenv().AutoStartEnabled = true
-    spawn(function()
-        -- Đầu tiên teleport đến map và act đã chọn
-        local selectedMap = ConfigSystem.CurrentConfig.SelectedMap
-        local selectedAct = ConfigSystem.CurrentConfig.SelectedAct
-        
-        if selectedMap and selectedAct then
-            pcall(function()
-                game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap .. "(Map)", selectedAct)
-                print("Auto Start khởi tạo: Đã teleport đến:", selectedMap, "- Act:", selectedAct)
-            end)
-        end
-        
-        -- Đợi một chút để teleport hoàn tất
-        wait(2)
-        
-        -- Sau đó bắt đầu auto skip
-        while getgenv().AutoStartEnabled do
-            wait(1)
-            if ConfigSystem.CurrentConfig.AutoStartEnabled then
-                pcall(function()
-                    game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
-                end)
-            end
-        end
-    end)
-end
-
 -- Thông báo khi script đã tải xong
 Fluent:Notify({
     Title = "Kaihon Hub đã sẵn sàng",
     Content = "Script đã tải thành công! Đã tải cấu hình cho " .. playerName,
     Duration = 3
+})
+
+-- === Thêm Dropdown và Toggle cho Auto Start Map ===
+local mapList = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City"}
+local actList = {1, 2, 3, 4, 5, 6}
+
+-- Giá trị mặc định
+ConfigSystem.DefaultConfig.SelectedMap = mapList[1]
+ConfigSystem.DefaultConfig.SelectedAct = actList[1]
+ConfigSystem.DefaultConfig.AutoStartEnabled = false
+
+ConfigSystem.CurrentConfig.SelectedMap = ConfigSystem.CurrentConfig.SelectedMap or ConfigSystem.DefaultConfig.SelectedMap
+ConfigSystem.CurrentConfig.SelectedAct = ConfigSystem.CurrentConfig.SelectedAct or ConfigSystem.DefaultConfig.SelectedAct
+ConfigSystem.CurrentConfig.AutoStartEnabled = ConfigSystem.CurrentConfig.AutoStartEnabled or ConfigSystem.DefaultConfig.AutoStartEnabled
+
+-- Dropdown chọn map
+local mapDropdown = MainTab:AddDropdown("SelectMapDropdown", {
+    Title = "Select Map",
+    Values = mapList,
+    Multi = false,
+    Default = ConfigSystem.CurrentConfig.SelectedMap,
+    Callback = function(value)
+        ConfigSystem.CurrentConfig.SelectedMap = value
+        ConfigSystem.SaveConfig()
+    end
+})
+
+-- Dropdown chọn act
+local actDropdown = MainTab:AddDropdown("SelectActDropdown", {
+    Title = "Select Act",
+    Values = actList,
+    Multi = false,
+    Default = ConfigSystem.CurrentConfig.SelectedAct,
+    Callback = function(value)
+        ConfigSystem.CurrentConfig.SelectedAct = value
+        ConfigSystem.SaveConfig()
+    end
+})
+
+-- Toggle Auto Start
+local autoStartToggle
+local autoStartThread
+local function doAutoStart()
+    while ConfigSystem.CurrentConfig.AutoStartEnabled do
+        local map = ConfigSystem.CurrentConfig.SelectedMap or mapList[1]
+        local act = ConfigSystem.CurrentConfig.SelectedAct or actList[1]
+        -- Gửi lệnh chọn map và act
+        local mapArg = map
+        if map == "Central City" then
+            mapArg = "Central City(Map)" -- Đúng format yêu cầu
+        end
+        pcall(function()
+            game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", mapArg, act)
+            wait(1)
+            game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
+        end)
+        -- Lặp lại sau 5 giây
+        wait(5)
+    end
+end
+
+autoStartToggle = MainTab:AddToggle("AutoStartToggle", {
+    Title = "Auto Start",
+    Default = ConfigSystem.CurrentConfig.AutoStartEnabled,
+    Callback = function(state)
+        ConfigSystem.CurrentConfig.AutoStartEnabled = state
+        ConfigSystem.SaveConfig()
+        if state then
+            if autoStartThread == nil or coroutine.status(autoStartThread) == "dead" then
+                autoStartThread = coroutine.create(doAutoStart)
+                coroutine.resume(autoStartThread)
+            end
+        end
+    end
 })

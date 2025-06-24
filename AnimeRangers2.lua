@@ -118,12 +118,12 @@ local SettingsTab = Window:AddTab({
 -- Section Map trong tab Main
 local MapSection = MainTab:AddSection("Map Settings")
 
--- Dropdown để chọn Map
-MapSection:AddDropdown("MapDropdown", {
+-- Sửa lại phần Dropdown để chọn Map
+local mapDropdown = MapSection:AddDropdown("MapDropdown", {
     Title = "Select Map",
     Values = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City"},
     Multi = false,
-    Default = ConfigSystem.CurrentConfig.SelectedMap or "Marines Fort",
+    Default = 1, -- Để mặc định là 1 trước
     Callback = function(Value)
         selectedMap = Value
         ConfigSystem.CurrentConfig.SelectedMap = Value
@@ -132,12 +132,20 @@ MapSection:AddDropdown("MapDropdown", {
     end
 })
 
--- Dropdown để chọn Act
-MapSection:AddDropdown("ActDropdown", {
+-- Set lại giá trị sau khi tạo dropdown
+task.spawn(function()
+    task.wait(0.5) -- Đợi UI load xong
+    if ConfigSystem.CurrentConfig.SelectedMap then
+        mapDropdown:SetValue(ConfigSystem.CurrentConfig.SelectedMap)
+    end
+end)
+
+-- Sửa lại phần Dropdown để chọn Act
+local actDropdown = MapSection:AddDropdown("ActDropdown", {
     Title = "Select Act",
     Values = {"1", "2", "3", "4", "5", "6"},
     Multi = false,
-    Default = ConfigSystem.CurrentConfig.SelectedAct or 1,
+    Default = 1, -- Để mặc định là 1 trước
     Callback = function(Value)
         selectedAct = tonumber(Value)
         ConfigSystem.CurrentConfig.SelectedAct = selectedAct
@@ -145,6 +153,14 @@ MapSection:AddDropdown("ActDropdown", {
         logPrint("Selected Act: " .. selectedAct)
     end
 })
+
+-- Set lại giá trị sau khi tạo dropdown
+task.spawn(function()
+    task.wait(0.5) -- Đợi UI load xong
+    if ConfigSystem.CurrentConfig.SelectedAct then
+        actDropdown:SetValue(tostring(ConfigSystem.CurrentConfig.SelectedAct))
+    end
+end)
 
 -- Toggle để bật/tắt Auto Join Map
 MapSection:AddToggle("AutoJoinToggle", {

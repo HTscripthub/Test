@@ -73,12 +73,31 @@ local selectedAct = ConfigSystem.CurrentConfig.SelectedAct or 1
 local autoJoinEnabled = ConfigSystem.CurrentConfig.AutoJoinEnabled or false
 local autoStartEnabled = ConfigSystem.CurrentConfig.AutoStartEnabled or false
 
+-- Thêm biến cho Auto Hide UI vào phần biến trạng thái Map
+local autoHideUI = ConfigSystem.CurrentConfig.AutoHideUI or false
+
+-- Thêm vào DefaultConfig
+ConfigSystem.DefaultConfig.AutoHideUI = false
+
+-- Thêm biến cho Log Console vào phần biến trạng thái Map
+local logConsoleEnabled = ConfigSystem.CurrentConfig.LogConsoleEnabled or true
+
+-- Thêm vào DefaultConfig
+ConfigSystem.DefaultConfig.LogConsoleEnabled = true
+
+-- Hàm để log có điều kiện
+local function logPrint(message)
+    if logConsoleEnabled then
+        print(message)
+    end
+end
+
 -- Tạo Window chính
 local Window = Fluent:CreateWindow({
     Title = "Anime Last Stand Script",
-    SubTitle = "by Cody",
-    TabWidth = 160,
-    Size = UDim2.fromOffset(580, 460),
+    SubTitle = "by Duong Tuan",
+    TabWidth = 140,
+    Size = UDim2.fromOffset(450, 350),
     Acrylic = true,
     Theme = "Dark",
     MinimizeKey = Enum.KeyCode.LeftControl
@@ -109,7 +128,7 @@ MapSection:AddDropdown("MapDropdown", {
         selectedMap = Value
         ConfigSystem.CurrentConfig.SelectedMap = Value
         ConfigSystem.SaveConfig()
-        print("Selected Map: " .. selectedMap)
+        logPrint("Selected Map: " .. selectedMap)
     end
 })
 
@@ -123,7 +142,7 @@ MapSection:AddDropdown("ActDropdown", {
         selectedAct = tonumber(Value)
         ConfigSystem.CurrentConfig.SelectedAct = selectedAct
         ConfigSystem.SaveConfig()
-        print("Selected Act: " .. selectedAct)
+        logPrint("Selected Act: " .. selectedAct)
     end
 })
 
@@ -145,10 +164,10 @@ MapSection:AddToggle("AutoJoinToggle", {
             
             -- Tạo coroutine để tự động tham gia map
             spawn(function()
-                while autoJoinEnabled and wait(10) do -- Lặp lại mỗi 60 giây
+                while autoJoinEnabled and wait(10) do -- Lặp lại mỗi 10 giây
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap, selectedAct)
-                        print("Attempting to join map: " .. selectedMap .. " Act " .. selectedAct)
+                        logPrint("Attempting to join map: " .. selectedMap .. " Act " .. selectedAct)
                     end)
                 end
             end)
@@ -180,10 +199,10 @@ MapSection:AddToggle("AutoStartToggle", {
             
             -- Tạo coroutine để tự động bắt đầu match
             spawn(function()
-                while autoStartEnabled and wait(15) do -- Lặp lại mỗi 60 giây
+                while autoStartEnabled and wait(15) do -- Lặp lại mỗi 15 giây
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
-                        print("Attempting to start match")
+                        logPrint("Attempting to start match")
                     end)
                 end
             end)
@@ -226,6 +245,78 @@ MapSection:AddButton({
                 Duration = 3
             })
         end)
+    end
+})
+
+-- Thêm Toggle Auto Hide UI vào MapSection (sau nút Start Match Now)
+MapSection:AddToggle("AutoHideToggle", {
+    Title = "Auto Hide UI",
+    Default = ConfigSystem.CurrentConfig.AutoHideUI or false,
+    Callback = function(Value)
+        autoHideUI = Value
+        ConfigSystem.CurrentConfig.AutoHideUI = Value
+        ConfigSystem.SaveConfig()
+        
+        if autoHideUI then
+            Fluent:Notify({
+                Title = "Auto Hide UI Enabled",
+                Content = "UI will automatically hide when in game",
+                Duration = 3
+            })
+            
+            -- Tạo coroutine để tự động ẩn UI
+            spawn(function()
+                while autoHideUI and wait(2) do -- Kiểm tra mỗi 2 giây
+                    pcall(function()
+                        local player = game:GetService("Players").LocalPlayer
+                        
+                        -- Kiểm tra nếu player đang trong game (có character và không ở lobby)
+                        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                            local currentPlace = player.Character.HumanoidRootPart.Position
+                            
+                            -- Kiểm tra nếu không ở lobby (tọa độ lobby thường khác với map)
+                            -- Bạn có thể điều chỉnh điều kiện này tùy theo game
+                            if math.abs(currentPlace.Y) > 50 or math.abs(currentPlace.X) > 1000 or math.abs(currentPlace.Z) > 1000 then
+                                -- Ẩn UI khi đang trong map
+                                Window:Minimize()
+                                logPrint("Auto hiding UI - Player in game")
+                            end
+                        end
+                    end)
+                end
+            end)
+        else
+            Fluent:Notify({
+                Title = "Auto Hide UI Disabled",
+                Content = "UI will not automatically hide",
+                Duration = 3
+            })
+        end
+    end
+})
+
+-- Thêm Toggle Log Console vào MapSection (sau nút Auto Hide UI)
+MapSection:AddToggle("LogConsoleToggle", {
+    Title = "Enable Console Log",
+    Default = ConfigSystem.CurrentConfig.LogConsoleEnabled or true,
+    Callback = function(Value)
+        logConsoleEnabled = Value
+        ConfigSystem.CurrentConfig.LogConsoleEnabled = Value
+        ConfigSystem.SaveConfig()
+        
+        if logConsoleEnabled then
+            Fluent:Notify({
+                Title = "Console Log Enabled",
+                Content = "Console logging is now enabled",
+                Duration = 3
+            })
+        else
+            Fluent:Notify({
+                Title = "Console Log Disabled",
+                Content = "Console logging is now disabled to reduce lag",
+                Duration = 3
+            })
+        end
     end
 })
 

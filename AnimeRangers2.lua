@@ -103,12 +103,28 @@ local SettingsTab = Window:AddTab({
 -- Section Map trong tab Main
 local MapSection = MainTab:AddSection("Map Settings")
 
--- Dropdown để chọn Map
+-- Danh sách map và tìm index của map đã chọn
+local mapList = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City"}
+local actList = {"1", "2", "3", "4", "5", "6"}
+
+-- Tìm index của map đã lưu
+local selectedMapIndex = 1
+for i, map in ipairs(mapList) do
+    if map == selectedMap then
+        selectedMapIndex = i
+        break
+    end
+end
+
+-- Tìm index của act đã lưu
+local selectedActIndex = selectedAct
+
+-- Dropdown để chọn Map với giá trị mặc định từ config
 MapSection:AddDropdown("MapDropdown", {
     Title = "Select Map",
-    Values = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City"},
+    Values = mapList,
     Multi = false,
-    Default = 1,
+    Default = selectedMapIndex, -- Sử dụng index thay vì value
     Callback = function(Value)
         selectedMap = Value
         ConfigSystem.CurrentConfig.SelectedMap = Value
@@ -117,12 +133,12 @@ MapSection:AddDropdown("MapDropdown", {
     end
 })
 
--- Dropdown để chọn Act
+-- Dropdown để chọn Act với giá trị mặc định từ config
 MapSection:AddDropdown("ActDropdown", {
     Title = "Select Act",
-    Values = {"1", "2", "3", "4", "5", "6"},
+    Values = actList,
     Multi = false,
-    Default = 1,
+    Default = selectedActIndex, -- Sử dụng index thay vì value
     Callback = function(Value)
         selectedAct = tonumber(Value)
         ConfigSystem.CurrentConfig.SelectedAct = selectedAct
@@ -134,7 +150,7 @@ MapSection:AddDropdown("ActDropdown", {
 -- Toggle Auto Join Map
 MapSection:AddToggle("AutoJoinToggle", {
     Title = "Auto Join Map",
-    Default = ConfigSystem.CurrentConfig.AutoJoinEnabled or false,
+    Default = autoJoinEnabled, -- Sử dụng biến đã load từ config
     Callback = function(Value)
         autoJoinEnabled = Value
         ConfigSystem.CurrentConfig.AutoJoinEnabled = Value
@@ -182,7 +198,7 @@ MapSection:AddToggle("AutoJoinToggle", {
 -- Toggle Auto Start
 MapSection:AddToggle("AutoStartToggle", {
     Title = "Auto Start",
-    Default = ConfigSystem.CurrentConfig.AutoStartEnabled or false,
+    Default = autoStartEnabled, -- Sử dụng biến đã load từ config
     Callback = function(Value)
         autoStartEnabled = Value
         ConfigSystem.CurrentConfig.AutoStartEnabled = Value
@@ -250,10 +266,30 @@ SettingsTab:AddParagraph({
     Content = "Nhấn LeftControl để ẩn/hiện giao diện"
 })
 
--- Auto Save Config
+-- Debug button để kiểm tra config hiện tại
+SettingsSection:AddButton({
+    Title = "Debug Config",
+    Description = "Hiển thị cấu hình hiện tại",
+    Callback = function()
+        print("=== CONFIG DEBUG ===")
+        print("Selected Map:", ConfigSystem.CurrentConfig.SelectedMap)
+        print("Selected Act:", ConfigSystem.CurrentConfig.SelectedAct)
+        print("Auto Join:", ConfigSystem.CurrentConfig.AutoJoinEnabled)
+        print("Auto Start:", ConfigSystem.CurrentConfig.AutoStartEnabled)
+        print("File exists:", isfile(ConfigSystem.FileName))
+        
+        Fluent:Notify({
+            Title = "Debug Config",
+            Content = "Map: " .. tostring(ConfigSystem.CurrentConfig.SelectedMap) .. " | Act: " .. tostring(ConfigSystem.CurrentConfig.SelectedAct),
+            Duration = 5
+        })
+    end
+})
+
+-- Auto Save Config - chạy ít thường xuyên hơn
 local function AutoSaveConfig()
     spawn(function()
-        while wait(5) do -- Lưu mỗi 5 giây
+        while wait(10) do -- Lưu mỗi 10 giây thay vì 5 giây
             pcall(function()
                 ConfigSystem.SaveConfig()
             end)
@@ -263,26 +299,6 @@ end
 
 -- Thực thi tự động lưu cấu hình
 AutoSaveConfig()
-
--- Thêm event listener để lưu ngay khi thay đổi giá trị
-local function setupSaveEvents()
-    for _, tab in pairs({MainTab, SettingsTab}) do
-        if tab and tab._components then
-            for _, element in pairs(tab._components) do
-                if element and element.OnChanged then
-                    element.OnChanged:Connect(function()
-                        pcall(function()
-                            ConfigSystem.SaveConfig()
-                        end)
-                    end)
-                end
-            end
-        end
-    end
-end
-
--- Thiết lập events
-setupSaveEvents()
 
 -- Thêm hỗ trợ Logo khi minimize
 repeat task.wait(0.25) until game:IsLoaded()
@@ -336,8 +352,16 @@ task.spawn(function()
 end)
 
 -- Thông báo khi script đã tải xong
+wait(1) -- Đợi một chút để UI render xong
 Fluent:Notify({
     Title = "Anime Last Stand đã sẵn sàng",
-    Content = "Script đã tải thành công! Đã tải cấu hình cho " .. playerName,
-    Duration = 3
+    Content = "Script đã tải thành công! Map: " .. selectedMap .. " | Act: " .. selectedAct,
+    Duration = 5
 })
+
+-- Debug: In ra config đã load
+print("=== LOADED CONFIG ===")
+print("Map:", selectedMap)
+print("Act:", selectedAct)
+print("Auto Join:", autoJoinEnabled)
+print("Auto Start:", autoStartEnabled)

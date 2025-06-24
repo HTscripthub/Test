@@ -16,8 +16,8 @@ end
 
 -- Đợi đến khi Fluent được tải hoàn tất
 if not Fluent then
-    warn("Không thể tải thư viện Fluent!")
     return
+    warn("Không thể tải thư viện Fluent!")
 end
 
 -- Hệ thống lưu trữ cấu hình
@@ -123,7 +123,7 @@ MapSection:AddDropdown("MapDropdown", {
     Title = "Select Map",
     Values = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City"},
     Multi = false,
-    Default = 1,
+    Default = selectedMap,
     Callback = function(Value)
         selectedMap = Value
         ConfigSystem.CurrentConfig.SelectedMap = Value
@@ -137,7 +137,7 @@ MapSection:AddDropdown("ActDropdown", {
     Title = "Select Act",
     Values = {"1", "2", "3", "4", "5", "6"},
     Multi = false,
-    Default = 1,
+    Default = tostring(selectedAct),
     Callback = function(Value)
         selectedAct = tonumber(Value)
         ConfigSystem.CurrentConfig.SelectedAct = selectedAct

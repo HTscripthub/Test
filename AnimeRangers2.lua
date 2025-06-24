@@ -16,8 +16,8 @@ end
 
 -- Đợi đến khi Fluent được tải hoàn tất
 if not Fluent then
-    return
     warn("Không thể tải thư viện Fluent!")
+    return
 end
 
 -- Hệ thống lưu trữ cấu hình
@@ -95,9 +95,9 @@ end
 -- Tạo Window chính
 local Window = Fluent:CreateWindow({
     Title = "Anime Last Stand Script",
-    SubTitle = "by Duong Tuan",
-    TabWidth = 140,
-    Size = UDim2.fromOffset(450, 350),
+    SubTitle = "by Cody",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
     Theme = "Dark",
     MinimizeKey = Enum.KeyCode.LeftControl
@@ -118,12 +118,12 @@ local SettingsTab = Window:AddTab({
 -- Section Map trong tab Main
 local MapSection = MainTab:AddSection("Map Settings")
 
--- Sửa lại phần Dropdown để chọn Map
-local mapDropdown = MapSection:AddDropdown("MapDropdown", {
+-- Dropdown để chọn Map
+MapSection:AddDropdown("MapDropdown", {
     Title = "Select Map",
     Values = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City"},
     Multi = false,
-    Default = 1, -- Để mặc định là 1 trước
+    Default = 1,
     Callback = function(Value)
         selectedMap = Value
         ConfigSystem.CurrentConfig.SelectedMap = Value
@@ -132,20 +132,12 @@ local mapDropdown = MapSection:AddDropdown("MapDropdown", {
     end
 })
 
--- Set lại giá trị sau khi tạo dropdown
-task.spawn(function()
-    task.wait(0.5) -- Đợi UI load xong
-    if ConfigSystem.CurrentConfig.SelectedMap then
-        mapDropdown:SetValue(ConfigSystem.CurrentConfig.SelectedMap)
-    end
-end)
-
--- Sửa lại phần Dropdown để chọn Act
-local actDropdown = MapSection:AddDropdown("ActDropdown", {
+-- Dropdown để chọn Act
+MapSection:AddDropdown("ActDropdown", {
     Title = "Select Act",
     Values = {"1", "2", "3", "4", "5", "6"},
     Multi = false,
-    Default = 1, -- Để mặc định là 1 trước
+    Default = 1,
     Callback = function(Value)
         selectedAct = tonumber(Value)
         ConfigSystem.CurrentConfig.SelectedAct = selectedAct
@@ -153,14 +145,6 @@ local actDropdown = MapSection:AddDropdown("ActDropdown", {
         logPrint("Selected Act: " .. selectedAct)
     end
 })
-
--- Set lại giá trị sau khi tạo dropdown
-task.spawn(function()
-    task.wait(0.5) -- Đợi UI load xong
-    if ConfigSystem.CurrentConfig.SelectedAct then
-        actDropdown:SetValue(tostring(ConfigSystem.CurrentConfig.SelectedAct))
-    end
-end)
 
 -- Toggle để bật/tắt Auto Join Map
 MapSection:AddToggle("AutoJoinToggle", {
@@ -180,7 +164,7 @@ MapSection:AddToggle("AutoJoinToggle", {
             
             -- Tạo coroutine để tự động tham gia map
             spawn(function()
-                while autoJoinEnabled and wait(10) do -- Lặp lại mỗi 10 giây
+                while autoJoinEnabled and wait(60) do -- Lặp lại mỗi 60 giây
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Select", selectedMap, selectedAct)
                         logPrint("Attempting to join map: " .. selectedMap .. " Act " .. selectedAct)
@@ -215,7 +199,7 @@ MapSection:AddToggle("AutoStartToggle", {
             
             -- Tạo coroutine để tự động bắt đầu match
             spawn(function()
-                while autoStartEnabled and wait(15) do -- Lặp lại mỗi 15 giây
+                while autoStartEnabled and wait(60) do -- Lặp lại mỗi 60 giây
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
                         logPrint("Attempting to start match")
@@ -450,3 +434,4 @@ Fluent:Notify({
     Content = "Script đã tải thành công! Đã tải cấu hình cho " .. playerName,
     Duration = 3
 })
+-- Kết thúc script

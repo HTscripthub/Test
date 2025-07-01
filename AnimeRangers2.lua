@@ -120,7 +120,7 @@ local SettingsTab = Window:AddTab({
 local MapSection = MainTab:AddSection("Map Settings")
 
 -- Danh sách map và tìm index của map đã chọn
-local mapList = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City"}
+local mapList = {"Marines Fort", "Hell City", "Snowvy Capital", "Leaf Village", "Wanderniech", "Central City","Flying Island"}
 local actList = {"1", "2", "3", "4", "5", "6"}
 
 -- Tìm index của map đã lưu

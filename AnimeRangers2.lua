@@ -230,6 +230,7 @@ MapSection:AddToggle("AutoStartToggle", {
             
             -- Tạo coroutine để tự động start
             autoStartCoroutine = coroutine.create(function()
+                wait(5) -- Thêm delay 5 giây trước khi bắt đầu auto start
                 while autoStartEnabled do
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")

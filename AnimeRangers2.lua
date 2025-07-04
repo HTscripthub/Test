@@ -188,7 +188,7 @@ MapSection:AddToggle("AutoJoinToggle", {
                     end)
                     
                     -- Chờ 60 giây trước khi thử lại
-                    for i = 1, 15 do
+                    for i = 1, 5 do
                         if not autoJoinEnabled then break end
                         wait(1)
                     end
@@ -237,7 +237,7 @@ MapSection:AddToggle("AutoStartToggle", {
                     end)
                     
                     -- Chờ 60 giây trước khi thử lại
-                    for i = 1, 17 do
+                    for i = 1, 7 do
                         if not autoStartEnabled then break end
                         wait(1)
                     end

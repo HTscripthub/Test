@@ -7,7 +7,7 @@ end
 print("Anime Last Stand Script đang khởi động...")
 print("Đợi 20 giây để tránh lag...")
 
-for i = 15, 1, -1 do
+for i = 17, 1, -1 do
     print("Khởi động sau " .. i .. " giây...")
     wait(1)
 end

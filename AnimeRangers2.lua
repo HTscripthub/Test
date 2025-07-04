@@ -237,7 +237,7 @@ MapSection:AddToggle("AutoStartToggle", {
                     end)
                     
                     -- Chờ 60 giây trước khi thử lại
-                    for i = 1, 7 do
+                    for i = 1, 10 do
                         if not autoStartEnabled then break end
                         wait(1)
                     end

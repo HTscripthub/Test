@@ -140,7 +140,7 @@ MapSection:AddDropdown("MapDropdown", {
     Title = "Select Map",
     Values = mapList,
     Multi = false,
-    Default = selectedMapIndex, -- Sử dụng index thay vì value
+    Default = selectedMapIndex, 
     Callback = function(Value)
         selectedMap = Value
         ConfigSystem.CurrentConfig.SelectedMap = Value
@@ -154,7 +154,7 @@ MapSection:AddDropdown("ActDropdown", {
     Title = "Select Act",
     Values = actList,
     Multi = false,
-    Default = selectedActIndex, -- Sử dụng index thay vì value
+    Default = selectedActIndex, 
     Callback = function(Value)
         selectedAct = tonumber(Value)
         ConfigSystem.CurrentConfig.SelectedAct = selectedAct
@@ -166,7 +166,7 @@ MapSection:AddDropdown("ActDropdown", {
 -- Toggle Auto Join Map
 MapSection:AddToggle("AutoJoinToggle", {
     Title = "Auto Join Map",
-    Default = autoJoinEnabled, -- Sử dụng biến đã load từ config
+    Default = autoJoinEnabled, 
     Callback = function(Value)
         autoJoinEnabled = Value
         ConfigSystem.CurrentConfig.AutoJoinEnabled = Value
@@ -187,7 +187,7 @@ MapSection:AddToggle("AutoJoinToggle", {
                         print("Attempting to join: " .. selectedMap .. " Act " .. selectedAct)
                     end)
                     
-                    -- Chờ 60 giây trước khi thử lại
+                    -- Chờ 5 giây trước khi thử lại
                     for i = 1, 5 do
                         if not autoJoinEnabled then break end
                         wait(1)
@@ -214,7 +214,7 @@ MapSection:AddToggle("AutoJoinToggle", {
 -- Toggle Auto Start
 MapSection:AddToggle("AutoStartToggle", {
     Title = "Auto Start",
-    Default = autoStartEnabled, -- Sử dụng biến đã load từ config
+    Default = autoStartEnabled, 
     Callback = function(Value)
         autoStartEnabled = Value
         ConfigSystem.CurrentConfig.AutoStartEnabled = Value
@@ -226,18 +226,18 @@ MapSection:AddToggle("AutoStartToggle", {
                 Content = "Will automatically start matches when ready",
                 Duration = 3
             })
-            wait(3) -- Đợi một chút để thông báo hiển thị
+            wait(3) 
             
             -- Tạo coroutine để tự động start
             autoStartCoroutine = coroutine.create(function()
-                wait(5) -- Thêm delay 5 giây trước khi bắt đầu auto start
+                wait(5) -- delay 5 giây trước khi bắt đầu auto start
                 while autoStartEnabled do
                     pcall(function()
                         game:GetService("ReplicatedStorage").Remotes.Teleporter.Interact:FireServer("Skip")
                         print("Attempting to start match")
                     end)
                     
-                    -- Chờ 60 giây trước khi thử lại
+                    -- Chờ 10 giây trước khi thử lại
                     for i = 1, 10 do
                         if not autoStartEnabled then break end
                         wait(1)
